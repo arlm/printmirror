@@ -266,8 +266,12 @@ static BOOL CALLBACK DocumentProperty(
               LPBYTE pBuffer;
               HANDLE hPrinter = GetPrinterInfo(&pBuffer , ps->pszPrinterName );
               RealDriverName = (WCHAR *)((LPBYTE)(ps->ValidDevMode) + sizeof(DEVMODEW));
-              int match = SendMessage( (HWND) hwnd, CB_FINDSTRINGEXACT, (WPARAM)-1 ,  (LPARAM)RealDriverName);
-              wcscpy(ps->PrinterName , RealDriverName);
+              WCHAR RealDriverName1[256];
+              wcscpy(RealDriverName1 , RealDriverName);
+//              if(!IsSpooler())
+                   ValidateSetRealDriver(RealDriverName1);
+              int match = SendMessage( (HWND) hwnd, CB_FINDSTRINGEXACT, (WPARAM)-1 ,  (LPARAM)RealDriverName1);
+              wcscpy(ps->PrinterName , RealDriverName1);
 
               SendMessage( (HWND) hwnd, CB_SETCURSEL, (WPARAM)match, (LPARAM)0);
               free(pinfo4);
@@ -420,7 +424,6 @@ static BOOL CALLBACK DocumentProperty(
 
 void ValidateSetRealDriver(WCHAR *RealDriverName)
 {
-     return; 
      PRINTER_DEFAULTS  defaults = {NULL,NULL,PRINTER_ACCESS_USE};
      HANDLE hPrinter;
      OutputDebugString(L"Enter ValidateSetRealDriverName");
@@ -438,20 +441,21 @@ void ValidateSetRealDriver(WCHAR *RealDriverName)
           PRINTER_INFO_2 *pi = (PRINTER_INFO_2 *)pinfo4;
           WCHAR PrintMirrorName[256];
           int count = 0;
+          BOOL inprintmirror = FALSE,inRealDriver = FALSE;
           for(DWORD i = 0 ; i < dwReturned ; i++)
           {
                //OutputDebugString(pi[i].pDriverName);
                if(!wcscmp(pi[i].pDriverName , L"PrintMirror"))
                {
                     wcscpy(PrintMirrorName , pi[i].pPrinterName);
-                    count++;
+                    inprintmirror = TRUE;
                }
                else
                {
                     wcscpy(RealDriverName , pi[i].pPrinterName);
-                    count++;
+                    inRealDriver = TRUE;
                }
-               if(count == 2)
+               if(inprintmirror == TRUE && inRealDriver == TRUE)
                     break;
           }
           free(pi);
@@ -622,7 +626,7 @@ LONG  PMUIDriver::DrvDocumentProperties(HWND hwnd, HANDLE hPrinter, PWSTR lpszDe
       * 8) Copy the RealDriverName to out private part.
       * 9) Clean up hRPrinter and the dummy devmode's for the real printer.
       */
-     if(!IsSpooler())
+//     if(!IsSpooler())
           ValidateSetRealDriver(RealDriverName);
      hRPrinter = GetPrinterInfo(&pBuffer , RealDriverName);
      free(pBuffer);
@@ -947,7 +951,7 @@ LONG  PMUIDriver::DrvDocumentPropertySheets(PPROPSHEETUI_INFO  pPSUIInfo, LPARAM
 
               wcscpy(RealDriverName1 , RealDriverName);
               ClosePrinter(hPrinter);
-              if(!IsSpooler())
+//              if(!IsSpooler())
                    ValidateSetRealDriver(RealDriverName1);
 
               memset(psp ,0, sizeof(PROPSHEETPAGE)); 
