@@ -125,7 +125,7 @@ STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "License"
 FONT 8, "MS Sans Serif"
 BEGIN
-    LTEXT           "This is GNU GPL program Version1.1(Written by V Aravind)",
+    LTEXT           "This is GNU GPL program Version1.2(Written by Vipin Aravind)",
     IDC_LICENSE,13,46,102,30
     PUSHBUTTON      "Close",IDC_CLOSE,129,36,50,14
 END
