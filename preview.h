@@ -1,6 +1,6 @@
 /*
    PrintMirror extracts individual page metafiles from Spool File.
-   Copyright (C) 2002  V Aravind
+   Copyright (C) 2002-2004  Vipin Aravind
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -34,8 +34,8 @@ class PMPreview{
      int GetScrollPosY(){ return ScrollPosY;}
      void SetScrollPosX(int x){ ScrollPosX = x;}
      void SetScrollPosY(int y){ ScrollPosY = y;}
-     int GetmaxScrollX(){ return ScrollPosX;}
-     int GetmaxScrollY(){ return ScrollPosY;}
+     int GetmaxScrollX(){ return maxScrollX;}
+     int GetmaxScrollY(){ return maxScrollY;}
      void DrawOnOwnerDrawButton(HWND hDlg);
      PMPreview(WCHAR *FileName) { ScrollPosX = 0;ScrollPosY = 0; maxScrollX = 0; maxScrollY = 0;
           MetaFileName = FileName; };

@@ -1,7 +1,7 @@
 
 /*
    PrintMirror extracts individual page metafiles from Spool File.
-   Copyright (C) 2002  V Aravind
+   Copyright (C) 2002-2004  Vipin Aravind
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -246,10 +246,12 @@ void InstalledPrinter(WCHAR *pInitialDriverName ,LPTSTR pPrinterName )
      WCHAR ach[256];
      PTSTR pPrinter;
 
+     memset(ach , 0 ,sizeof(WCHAR) * 256);
      GetProfileString (L"windows", L"device", NULL, ach, 256);
      pPrinter = (PTSTR)&ach[0];
      WCHAR *ptr = wcschr(pPrinter , ',');
-     *ptr = 0;
+     if(ptr)
+          *ptr = 0;
      wcscpy(pInitialDriverName , pPrinter);
 }
 

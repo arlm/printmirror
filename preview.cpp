@@ -1,6 +1,6 @@
 /*
    PrintMirror extracts individual page metafiles from Spool File.
-   Copyright (C) 2002  V Aravind
+   Copyright (C) 2002-2004  Vipin Aravind
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -147,6 +147,7 @@ void PMPreview::ResizePreviewWindow(HWND hDlg,HWND hwnd , HENHMETAFILE hemf)
           ShowWindow(GetDlgItem(hDlg,IDC_SCROLLX), SW_HIDE);
      else
           ShowWindow(GetDlgItem(hDlg,IDC_SCROLLX), SW_SHOW);
+     ReleaseDC(NULL,ScreenDC);
 
 }
 
@@ -200,6 +201,7 @@ BOOL APIENTRY PMPreview :: PreviewMetafile(
               GetWindowRect(hwnd , &PreviewRect);
               MoveWindow(hwnd , ScreenWidth /4 ,0,ScreenWidth/2,ScreenHeight,FALSE); 
               int PreviewRight = (ScreenWidth * 3) /4;
+              ReleaseDC(NULL,hDC);
               return TRUE;
          }
      case WM_VSCROLL:
@@ -213,10 +215,12 @@ BOOL APIENTRY PMPreview :: PreviewMetafile(
                   pmp->SetScrollPosY(max(0,pmp->GetScrollPosY() - 1));
                   break;
               case SB_PAGEDOWN:
-                  pmp->SetScrollPosY(max(0,pmp->GetScrollPosY()  + 10));
+                 // pmp->SetScrollPosY(max(0,pmp->GetScrollPosY()  + 10));
+                 pmp->SetScrollPosY( min(pmp->GetmaxScrollY(),pmp->GetScrollPosY() + 10));
                   break;
               case SB_LINEDOWN:
-                  pmp->SetScrollPosY( min(pmp->GetmaxScrollY(),pmp->GetScrollPosY() + 1));
+//                  pmp->SetScrollPosY(max(0,pmp->GetScrollPosY()  + 1));
+                 pmp->SetScrollPosY( min(pmp->GetmaxScrollY(),pmp->GetScrollPosY() + 1));
                   break;
               case SB_THUMBTRACK:
               case SB_THUMBPOSITION:
@@ -240,9 +244,11 @@ BOOL APIENTRY PMPreview :: PreviewMetafile(
                   pmp->SetScrollPosX(max(0,pmp->GetScrollPosX() - 1));
                   break;
               case SB_PAGERIGHT:
-                  pmp->SetScrollPosX(max(0,pmp->GetScrollPosX() + 10));
+                  //pmp->SetScrollPosX(max(0,pmp->GetScrollPosX() + 10));
+                  pmp->SetScrollPosX(min(pmp->GetmaxScrollX(),pmp->GetScrollPosX() + 10));
                   break;
               case SB_LINERIGHT:
+//                  pmp->SetScrollPosX(max(0,pmp->GetScrollPosX() + 1));
                   pmp->SetScrollPosX(min(pmp->GetmaxScrollX(),pmp->GetScrollPosX() + 1));
                   break;
               case SB_THUMBTRACK:

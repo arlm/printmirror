@@ -1,7 +1,7 @@
 
 /*
    PrintMirror extracts individual page metafiles from Spool File.
-   Copyright (C) 2002  V Aravind
+   Copyright (C) 2002-2004  Vipin Aravind
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -27,14 +27,6 @@
 
 
 #include "prntmrui.h"
-/*
-BOOL bIsExplorer = FALSE;
-BOOL FirstTime = TRUE;
-VDEVMODE DllDevmode;
-PPDEV pPDevG = NULL;
-TCHAR PrinterName[MAX_PATH]; //REVISIT 
-WCHAR RealPrinterName[256];//magic
-*/
 
 static UINT CALLBACK PropSheetPageProc(
         HWND hwnd,
@@ -66,14 +58,17 @@ static UINT CALLBACK PropSheetPageProc(
 void FillInPropertyPage( PROPSHEETPAGE* psp, int idDlg, LPTSTR pszProc, DLGPROC pfnDlgProc, 
         VPrinterSettings *ps)
 {
-     psp->dwSize = sizeof(PROPSHEETPAGE);
-     psp->dwFlags = PSP_USECALLBACK;
-     psp->hInstance = hModDLL ;
-     psp->pszTemplate = MAKEINTRESOURCE(idDlg);
-     psp->pfnDlgProc = pfnDlgProc;
-     psp->pszTitle = (LPTSTR)"";
-     psp->lParam = (LPARAM)ps;
-     psp->pfnCallback = PropSheetPageProc;
+     if(psp)
+     {
+          psp->dwSize = sizeof(PROPSHEETPAGE);
+          psp->dwFlags = PSP_USECALLBACK;
+          psp->hInstance = hModDLL ;
+          psp->pszTemplate = MAKEINTRESOURCE(idDlg);
+          psp->pfnDlgProc = pfnDlgProc;
+          psp->pszTitle = (LPTSTR)"";
+          psp->lParam = (LPARAM)ps;
+          psp->pfnCallback = PropSheetPageProc;
+     }
 
 }
 static BOOL CALLBACK DevicePropertiesDialog(
@@ -1106,6 +1101,7 @@ BOOL  PMUIDriver::DrvPrinterEvent(LPWSTR  pPrinterName, INT  DriverEvent, DWORD 
      if(DriverEvent == PRINTER_EVENT_INITIALIZE)
      {
           WCHAR RealDriverName[256];
+          memset(RealDriverName , 0 , sizeof(WCHAR) * 256);
           InstalledPrinter(RealDriverName , pPrinterName);
           SetRealDriverName(pPrinterName , RealDriverName);
      }
