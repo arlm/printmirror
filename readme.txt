@@ -42,6 +42,25 @@ How to use?
   PrintMiror will mimmick the capabilities of the printer you choose in the Printer: and will 
   generate a spool file.
 
+PrintMirror:-
+When you print from a windows application to PrintMirror,PrintMirror  
+shows a dialog which contains the buttons:-
+1) Extract, for extracting the page as bmp or emf file
+2) Previous, for traversing the pages in the print(useful for previewing)
+3) Next, for going to the next page.
+4) Print, for printing to a real Printer.
+5) License, indicates its a GNU GPL program
+
+Version 1.0:-
+It can extract metafiles from the spool file.
+
+Version 1.1:-
+1)You can save printing to .bmp file(useful for sending someone an image)
+2)can print to any printer on the system.
+
+Version 1.2:-
+1)Defect Crash Fix:- When PrintMirror was mimicking PrinterA on a system with 2 printers,PrinterA and PrinterB and PrinterA is deleted, PrintMirror needs to pick up PrinterB to mimick in its future use.
+
 
 
 
