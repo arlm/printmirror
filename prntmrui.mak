@@ -1,7 +1,7 @@
 
 
 #   PrintMirror extracts individual page metafiles from Spool File.
-#   Copyright (C) 2002  V Aravind
+#   Copyright (C) 2002-2004  Vipin Aravind
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -74,7 +74,7 @@ CLEAN :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
 CPP=cl.exe
-CPP_PROJ= /nologo /Gz /MD /W3 /GX /Od  /D "WIN32"   /I $(NTDDK_INCLUDE) /I $(PLATFORM_SDK) /D "_WINDOWS" /Fp"$(INTDIR)\prntmrui.pch"  /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ= /nologo /Gz /Od /MD /W3 /GX /Od  /D "WIN32"   /I $(NTDDK_INCLUDE) /I $(PLATFORM_SDK) /D "_WINDOWS" /Fp"$(INTDIR)\prntmrui.pch"  /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
@@ -104,6 +104,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\dllentry.obj" \
 	"$(INTDIR)\preview.obj" \
 	"$(INTDIR)\prntmrui.obj" \
+	"$(INTDIR)\patchup.obj" \
 	"$(INTDIR)\convdevm.obj" \
 	"$(INTDIR)\devcap.obj" \
 	"$(INTDIR)\docevent.obj" \
@@ -143,7 +144,7 @@ CLEAN :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
 CPP=cl.exe
-CPP_PROJ=/nologo /Gz /MDd /W3 /Gm /GX /ZI /Od /I $(NTDDK_INCLUDE)  /I $(PLATFORM_SDK) /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /Fp"$(INTDIR)\prntmrui.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /Gz /GZ /MDd /W3 /Gm /GX /ZI /Od /I $(NTDDK_INCLUDE)  /I $(PLATFORM_SDK) /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /Fp"$(INTDIR)\prntmrui.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
@@ -167,13 +168,14 @@ RSC=rc.exe
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\prntmrui.res" /d "_DEBUG" 
 	
 LINK32=link.exe
-LINK32_FLAGS=/LIBPATH:d:\ntddk\libfre\i386 comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib  /nologo /subsystem:windows /dll /incremental:yes /pdb:"$(OUTDIR)\prntmrui.pdb" /debug /machine:I386 /def:".\prntmrui.DEF" /out:"$(OUTDIR)\prntmrui.dll" /implib:"$(OUTDIR)\prntmrui.lib" 
+LINK32_FLAGS=/LIBPATH:d:\ntddk\libchk\i386 comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib  /nologo /subsystem:windows /dll /incremental:yes /pdb:"$(OUTDIR)\prntmrui.pdb" /debug /machine:I386 /def:".\prntmrui.DEF" /out:"$(OUTDIR)\prntmrui.dll" /implib:"$(OUTDIR)\prntmrui.lib" 
 DEF_FILE= \
 	".\prntmrui.DEF"
 LINK32_OBJS= \
 	"$(INTDIR)\dllentry.obj" \
 	"$(INTDIR)\preview.obj" \
 	"$(INTDIR)\prntmrui.obj" \
+	"$(INTDIR)\patchup.obj" \
 	"$(INTDIR)\convdevm.obj" \
 	"$(INTDIR)\devcap.obj" \
 	"$(INTDIR)\docevent.obj" \
@@ -197,6 +199,7 @@ SOURCE=\
     preview.cpp \
     dllentry.cpp \
     prntmrui.cpp \
+    patchup.cpp \
     convdevm.cpp \
     devcap.cpp \
     docevent.cpp \

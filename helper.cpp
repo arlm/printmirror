@@ -49,7 +49,7 @@ BOOL IsSpooler()
 {
      WCHAR FileName[256];  
      GetModuleFileName( NULL,FileName, 256);
-     if(wcsstr(FileName , L"spoolsv.exe"))
+     if(wcsstr(FileName , L"spoolsv.exe") || wcsstr(FileName , L"SPOOLSV.EXE"))
           return TRUE;
      return FALSE;
 
@@ -58,7 +58,8 @@ BOOL IsExplorer()
 {
      WCHAR FileName[256];  
      GetModuleFileName( NULL,FileName, 256);
-     if(wcsstr(FileName , L"explorer.exe"))
+     OutputDebugString(FileName);
+     if(wcsstr(FileName , L"explorer.exe") || wcsstr(FileName , L"EXPLORER.EXE"))
           return TRUE;
      return FALSE;
 

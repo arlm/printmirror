@@ -22,6 +22,7 @@
 
 #include "prntmrui.h"
 #include "preview.h"
+extern void PatchIATs();
 int GetColorOrganisation(HDC hRealDC , DEVMODE *pbIn , ULONG palette[])
 {
 
@@ -127,10 +128,11 @@ void CreateWin2kcompatibleSplFile(HANDLE hPrinter)
      GetPrinter( hPrinter, 2, pPInfo, cbNeeded, &cbNeeded );
      if(!(((PRINTER_INFO_2 *)pPInfo)->Attributes & PRINTER_ATTRIBUTE_KEEPPRINTEDJOBS)
              ||
-             (((PRINTER_INFO_2 *)pPInfo)->Attributes & PRINTER_ATTRIBUTE_DIRECT))
+             !(((PRINTER_INFO_2 *)pPInfo)->Attributes & PRINTER_ATTRIBUTE_QUEUED))
      {
           ((PRINTER_INFO_2 *)pPInfo)->Attributes |=PRINTER_ATTRIBUTE_KEEPPRINTEDJOBS;
           ((PRINTER_INFO_2 *)pPInfo)->Attributes &= ~PRINTER_ATTRIBUTE_DIRECT;
+          ((PRINTER_INFO_2 *)pPInfo)->Attributes |= PRINTER_ATTRIBUTE_QUEUED;
           PRINTER_DEFAULTS defaults = { NULL, NULL, PRINTER_ACCESS_ADMINISTER};
           HANDLE hDriver;
           OpenPrinter( ((PRINTER_INFO_2 *)pPInfo)->pPrinterName, &hDriver, &defaults);
@@ -425,6 +427,8 @@ INT PMUIDriver::DrvDocumentEvent(
          }
      case DOCUMENTEVENT_CREATEDCPRE:
          {
+
+              PatchIATs();
               CreateWin2kcompatibleSplFile(hPrinter);
 
               if(iEsc == DOCUMENTEVENT_CREATEDCPRE)

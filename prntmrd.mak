@@ -1,7 +1,7 @@
 
 
 #   PrintMirror extracts individual page metafiles from Spool File.
-#   Copyright (C) 2002  V Aravind
+#   Copyright (C) 2002-2004  Vipin Aravind
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -60,7 +60,7 @@ CLEAN :
 
 CPP=cl.exe
 
-CPP_PROJ=/nologo /MD /O2 /W3  /GX   /I $(NTDDK_INCLUDE) /D WINNT=1 /D _WIN32_WINNT=0x500 /D "USERMODE_DRIVER" /D "WIN32"  /D "_WINDOWS" /D "_USRDLL"  /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c  
+CPP_PROJ=/nologo  /MD /O2 /W3  /GX   /I $(NTDDK_INCLUDE) /D WINNT=1 /D _WIN32_WINNT=0x500 /D "USERMODE_DRIVER" /D "WIN32"  /D "_WINDOWS" /D "_USRDLL"  /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c  
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<

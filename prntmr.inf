@@ -57,6 +57,8 @@ DataSection=PRNTMRD_DATA
 [PRNTMRD]
 PRNTMRD.DLL
 PRNTMRUI.DLL
+README.TXT
+GNUGPL.TXT
 ;PRNTMRD.HLP
 
 
@@ -69,6 +71,7 @@ PRNTMRUI.DLL
 [PRNTMRD_DATA]
 DriverFile=PRNTMRD.DLL
 ConfigFile=PRNTMRUI.DLL
+DependentFile=README.TXT,GNUGPL.TXT
 
 ;
 ; Call SetupSetDirectoryId with 66000 to set the target directory at runtime

@@ -19,7 +19,6 @@
    Contact at vprnt@lycos.com
  */
 
-
 #define PRNTMRUI  1
 #include "prntmrui.h"
 PMUIDriver *pmui = NULL;

@@ -422,7 +422,7 @@ void ValidateSetRealDriver(WCHAR *RealDriverName, VDEVMODE *pdm)
 {
      PRINTER_DEFAULTS  defaults = {NULL,NULL,PRINTER_ACCESS_USE};
      HANDLE hPrinter;
-     OutputDebugString(L"Enter ValidateSetRealDriverName");
+     //OutputDebugString(L"Enter ValidateSetRealDriverName");
      if(!OpenPrinter(RealDriverName , &hPrinter , &defaults))
      {
           DWORD dwReturned,dwNeeded;
@@ -507,7 +507,7 @@ void ValidateSetRealDriver(WCHAR *RealDriverName, VDEVMODE *pdm)
      }
      else
           ClosePrinter(hPrinter);
-     OutputDebugString(L"Leave ValidateSetRealDriverName");
+     //OutputDebugString(L"Leave ValidateSetRealDriverName");
 
 }
 
@@ -601,7 +601,7 @@ LONG  PMUIDriver::DrvDocumentProperties(HWND hwnd, HANDLE hPrinter, PWSTR lpszDe
           {
                VPDEVMODE *PrivateDevmode = (VPDEVMODE *)((LPBYTE)pdm + sizeof(DEVMODEW));
                wcscpy(RealDriverName ,PrivateDevmode->PrinterName);
-               OutputDebugString(PrivateDevmode->PrinterName);
+               //OutputDebugString(PrivateDevmode->PrinterName);
                PaperSize = pdm->dmPaperSize;
                Orient = pdm->dmOrientation;
                PaperLength = pdm->dmPaperLength;
@@ -818,7 +818,7 @@ LONG  PMUIDriver::DrvDevicePropertySheets(PPROPSHEETUI_INFO  pPSUIInfo, LPARAM  
               GetPrinter( hPrinter, 2, NULL, 0, &dwNeeded );
               LPBYTE pi2 = (LPBYTE)malloc( dwNeeded );
               GetPrinter( hPrinter, 2, (LPBYTE)pi2, dwNeeded, &dwNeeded );
-              OutputDebugStringW(((PRINTER_INFO_2 *)pi2)->pPrinterName);   
+              //OutputDebugStringW(((PRINTER_INFO_2 *)pi2)->pPrinterName);   
               DonotSharePrinterNT(((PRINTER_INFO_2 *)pi2)->pPrinterName,NULL,FALSE);
               free(pi2);
               return 1;
@@ -979,7 +979,7 @@ LONG  PMUIDriver::DrvDocumentPropertySheets(PPROPSHEETUI_INFO  pPSUIInfo, LPARAM
               ps->ValidDevMode = (VDEVMODE *)malloc(sizeof(VDEVMODE));
               if(Fail  == TRUE)
               {
-                   OutputDebugString(L"failure in propertysheet");
+                   //OutputDebugString(L"failure in propertysheet");
                    memcpy(ps->ValidDevMode , ((PRINTER_INFO_2 *)pBuffer)->pDevMode , 
                            sizeof(VDEVMODE));
               }
