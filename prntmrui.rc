@@ -1,0 +1,213 @@
+
+/*
+   PrintMirror extracts individual page metafiles from Spool File.
+   Copyright (C) 2002  V Aravind
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+   
+   Contact at vprnt@lycos.com
+ */
+
+//Microsoft Developer Studio generated resource script.
+//
+#include "resourceui.h"
+#include "pmversion.h"
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#define APSTUDIO_HIDDEN_SYMBOLS
+#include "windows.h"
+#undef APSTUDIO_HIDDEN_SYMBOLS
+//#include "wizard.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifndef _MAC
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+1 VERSIONINFO
+ FILEVERSION 0 , 3, 0, 0
+ PRODUCTVERSION 5,1,2600,0
+ FILEFLAGSMASK 0x3fL
+ /*
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+*/
+ FILEFLAGS VFT2_DRV_PRINTER
+ FILEOS 0x40004L
+ FILETYPE 0x3L
+ FILESUBTYPE 0xaL
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName", "Vipin. \0"
+            VALUE "FileDescription", "Windows 2000\XP PrintMirror\0"
+            VALUE "FileVersion", PMVERSION
+            VALUE "InternalName", "prntmrui.dll\0"
+            VALUE "LegalCopyright", "Copyright © 2002 Vipin"
+            VALUE "OriginalFilename", "prntmrui.dll\0"
+            VALUE "ProductName", "Microsoft(R) Windows NT(R) Operating System\0"
+            VALUE "ProductVersion", "5.1.2600.0\0"
+        END
+    END
+END
+
+#endif    // !_MAC
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_PRINTDIALOG DIALOG DISCARDABLE  0, 0, 324, 200
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "PrintMirror"
+FONT 8, "MS Sans Serif"
+BEGIN
+     COMBOBOX        IDC_PRINTERCOMBO,46,23,112,200,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "&Printer:",IDC_STATIC,19,25,23,8
+    COMBOBOX        IDC_PAPERCOMBO,207,22,90,200,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "P&aper:",IDC_STATIC,181,26,22,8
+    LTEXT           "",IDC_PAPERSIZE,207,40,65,15
+END
+
+IDD_SAVEDIALOG DIALOG DISCARDABLE  0, 0, 186, 97
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "PrintMirror - Metafile Extractor"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "Extract",IDSAVE,129,15,50,14
+    PUSHBUTTON      "Next",IDNEXT,129,58,50,14
+    PUSHBUTTON      "Previous",IDPREV,129,36,50,14
+    LTEXT           "",IDC_SAVEAS,13,46,102,28
+    PUSHBUTTON      "License",IDLICENSE,129,80,50,14
+END
+
+IDD_LICENSEDIALOG DIALOG DISCARDABLE  0, 0, 186, 97
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "License"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "This is GNU GPL program",IDC_LICENSE,13,46,102,12
+    PUSHBUTTON      "Close",IDC_CLOSE,129,36,50,14
+END
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_PRINTDIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 317
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 279
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "#include ""windows.h""\r\n"
+    "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "#include ""ntverp.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_PRINTDIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 317
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 279
+    END
+    IDD_PRINTER, DIALOG
+    BEGIN
+        RIGHTMARGIN, 485
+        BOTTOMMARGIN, 450
+    END
+
+    IDD_ABOUT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 247
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 125
+    END
+END
+#endif
+
+
+
+

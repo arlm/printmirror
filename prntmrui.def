@@ -1,0 +1,9 @@
+
+EXPORTS
+ DevQueryPrintEx
+ DrvConvertDevMode
+ DrvDeviceCapabilities
+ DrvDevicePropertySheets
+ DrvDocumentEvent
+ DrvDocumentPropertySheets
+ DrvPrinterEvent
