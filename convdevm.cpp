@@ -2,7 +2,7 @@
 
 /*
    PrintMirror extracts individual page metafiles from Spool File.
-   Copyright (C) 2002  V Aravind
+   Copyright (C) 2002-2004  Vipin Aravind
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -39,8 +39,11 @@ PMUIDriver::DrvConvertDevMode(LPTSTR  pPrinterName, PDEVMODE  pdmIn, PDEVMODE  p
                return FALSE;
           }
           OpenPrinter(pPrinterName, &hPrinter, NULL);
-          DrvDocumentProperties(NULL, hPrinter, pPrinterName, pdmOut, NULL, DM_OUT_BUFFER);
-          ClosePrinter(hPrinter);
+          if(hPrinter)
+          {
+               DrvDocumentProperties(NULL, hPrinter, pPrinterName, pdmOut, NULL, DM_OUT_BUFFER);
+               ClosePrinter(hPrinter);
+          }
      }
 
      return TRUE; 

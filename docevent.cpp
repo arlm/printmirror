@@ -125,7 +125,9 @@ void CreateWin2kcompatibleSplFile(HANDLE hPrinter)
      GetPrinter( hPrinter, 2, NULL , 0, &cbNeeded);
      pPInfo = (LPBYTE)malloc(cbNeeded);
      GetPrinter( hPrinter, 2, pPInfo, cbNeeded, &cbNeeded );
-     if(!(((PRINTER_INFO_2 *)pPInfo)->Attributes & PRINTER_ATTRIBUTE_KEEPPRINTEDJOBS))
+     if(!(((PRINTER_INFO_2 *)pPInfo)->Attributes & PRINTER_ATTRIBUTE_KEEPPRINTEDJOBS)
+             ||
+             (((PRINTER_INFO_2 *)pPInfo)->Attributes & PRINTER_ATTRIBUTE_DIRECT))
      {
           ((PRINTER_INFO_2 *)pPInfo)->Attributes |=PRINTER_ATTRIBUTE_KEEPPRINTEDJOBS;
           ((PRINTER_INFO_2 *)pPInfo)->Attributes &= ~PRINTER_ATTRIBUTE_DIRECT;
@@ -283,7 +285,6 @@ BOOL APIENTRY PMDialog(
 
                   WCHAR DirName[MAX_PATH];
                   GetCurrentDirectory( MAX_PATH, DirName);
-                  OutputDebugStringW(DirName);
                   PopFileSaveDlg (hDlg, szFileName, szTitleName,ofn);
                   WCHAR *ptr =ofn.lpstrFile + ofn.nFileExtension; 
                   if(!wcscmp(ptr,L"emf"))
@@ -497,6 +498,8 @@ INT PMUIDriver::DrvDocumentEvent(
          break;
      case DOCUMENTEVENT_DELETEDC:
          break;
+     case DOCUMENTEVENT_STARTDOC:
+         break;
      case DOCUMENTEVENT_ENDDOCPOST:
          {
               if(IsSpooler())
@@ -512,6 +515,7 @@ INT PMUIDriver::DrvDocumentEvent(
                    *(DWORD *)((LPBYTE)lpv + sizeof(HANDLE)) = dwJobId;
                    HANDLE hThread =  CreateThread( NULL,   0, ThreadFunc, lpv, 0, NULL);     
               }
+              //_CrtDumpMemoryLeaks();
          }
          break;
      }
