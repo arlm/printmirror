@@ -1,1 +1,1 @@
-#define PMVERSION L"1.0"
+#define PMVERSION L"1.2"

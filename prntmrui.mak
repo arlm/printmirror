@@ -97,7 +97,7 @@ RSC=rc.exe
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\prntmrui.res"
 	
 LINK32=link.exe
-LINK32_FLAGS= /LIBPATH:d:\ntddk\libfre vfw32.lib comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib /nologo /subsystem:windows /dll /incremental:no /machine:I386 /def:".\prntmrui.DEF" /out:"$(OUTDIR)\prntmrui.dll" /implib:"$(OUTDIR)\prntmrui.lib" 
+LINK32_FLAGS= /LIBPATH:d:\ntddk\libfre\i386 vfw32.lib comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib /nologo /subsystem:windows /dll /incremental:no /machine:I386 /def:".\prntmrui.DEF" /out:"$(OUTDIR)\prntmrui.dll" /implib:"$(OUTDIR)\prntmrui.lib" 
 DEF_FILE= \
 	".\prntmrui.DEF"
 LINK32_OBJS= \
@@ -167,7 +167,7 @@ RSC=rc.exe
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\prntmrui.res" /d "_DEBUG" 
 	
 LINK32=link.exe
-LINK32_FLAGS=/LIBPATH:d:\ntddk\libfre comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib  /nologo /subsystem:windows /dll /incremental:yes /pdb:"$(OUTDIR)\prntmrui.pdb" /debug /machine:I386 /def:".\prntmrui.DEF" /out:"$(OUTDIR)\prntmrui.dll" /implib:"$(OUTDIR)\prntmrui.lib" 
+LINK32_FLAGS=/LIBPATH:d:\ntddk\libfre\i386 comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib  /nologo /subsystem:windows /dll /incremental:yes /pdb:"$(OUTDIR)\prntmrui.pdb" /debug /machine:I386 /def:".\prntmrui.DEF" /out:"$(OUTDIR)\prntmrui.dll" /implib:"$(OUTDIR)\prntmrui.lib" 
 DEF_FILE= \
 	".\prntmrui.DEF"
 LINK32_OBJS= \
@@ -177,6 +177,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\convdevm.obj" \
 	"$(INTDIR)\devcap.obj" \
 	"$(INTDIR)\docevent.obj" \
+	"$(INTDIR)\bitmap.obj" \
+	"$(INTDIR)\paper.obj" \
 	"$(INTDIR)\helper.obj" \
 	"$(INTDIR)\ntspl.obj" \
 	"$(INTDIR)\prntmrui.res"

@@ -234,7 +234,7 @@ void GetPrintMirrorName(WCHAR PrintMirrorName[]);
 BOOL IsSpooler();
 BOOL IsExplorer();
 VOID FillDeviceCaps(HDC hDC, GDIINFO *pGDIInfo , VDEVMODE *pbIn);
-HANDLE GetPrinterInfo(LPBYTE *pPrinterInfo , WCHAR PrinterName[],BOOL check = FALSE);
+HANDLE GetPrinterInfo(LPBYTE *pPrinterInfo , WCHAR PrinterName[]);
 DWORD GetRealDriverName(WCHAR PrinterName[], WCHAR RealDriverName[]);
 DWORD GetRealDriverName(HANDLE hPrinter, WCHAR RealDriverName[]);
 DWORD SetRealDriverName(WCHAR PrinterName[], WCHAR RealDriverName[]);

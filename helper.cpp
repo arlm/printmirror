@@ -151,7 +151,7 @@ VOID FillDeviceCaps(HDC hDC, GDIINFO *pGDIInfo , VDEVMODE *pbIn)
 /*
  *   Get the PRINTER_INFO_2 in pPrinterInfo  and return the hPrinter
  */
-HANDLE GetPrinterInfo(LPBYTE *pPrinterInfo , WCHAR PrinterName[],BOOL check) {
+HANDLE GetPrinterInfo(LPBYTE *pPrinterInfo , WCHAR PrinterName[]) {
      HANDLE hPrinter;
      DWORD cbNeeded;
      //PRINTER_DEFAULTS defaults = { NULL, NULL, PRINTER_ALL_ACCESS };
