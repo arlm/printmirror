@@ -246,6 +246,8 @@ BOOL IsInchDimensions();
 
 void GetMetaFileFromSpoolFile(TCHAR *SpoolFileName , int PageNbr , TCHAR *MetaFileName, PPDEV pPDev,LPBYTE *pDevmode);
 void GetSpoolFileName(DWORD JobId, TCHAR SpoolFileName[],HANDLE hDriver);
+void SaveAsBitmap(HWND hDlg , OPENFILENAME ofn , PPDEV pPDev);
+void PrintToPaper(PPDEV pPDev);
 
 class PMUIDriver{
 
@@ -257,6 +259,7 @@ class PMUIDriver{
      WCHAR RealPrinterName[256];
      LONG DrvDocumentProperties(HWND hwnd, HANDLE hPrinter, PWSTR lpszDeviceName,
              PDEVMODEW pdmOutput,PDEVMODEW pdmInput, DWORD fMode,BOOL fromApp = FALSE);
+     void FixUpDevmode(IN HANDLE hPrinter , IN DEVMODE *pbIn, IN OUT PULONG pbOut);
     public:
      PMUIDriver(BOOL bIsExp){ bIsExplorer = bIsExp; wcscpy(RealPrinterName , L"");}
      DWORD  PMDrvDeviceCapabilities(HANDLE  hPrinter,PWSTR  pDeviceName, WORD  iDevCap,

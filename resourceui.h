@@ -30,6 +30,7 @@
 #define IDSAVE                        1002
 #define IDLICENSE                     1003
 #define IDPREVIEW                     1004
+#define IDPRINT                       1005
 #define IDD_PRINTDIALOG                 107
 #define IDD_DEVICEDIALOG                108
 #define IDD_SAVEDIALOG                  109

@@ -1,6 +1,6 @@
 /*
    PrintMirror extracts individual page metafiles from Spool File.
-   Copyright (C) 2002  V Aravind
+   Copyright (C) 2002-2003  V Aravind
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -77,7 +77,7 @@ int GetColorOrganisation(HDC hRealDC , DEVMODE *pbIn , ULONG palette[])
      DeleteObject(hBitmap);
      return ret;
 }
-void CreateGDIInfoFile(HANDLE hPrinter,VDEVMODE *pbIn ,WCHAR *GDIINFOFile)
+void CreateGDIInfo(HANDLE hPrinter,VDEVMODE *pbIn)
 {
      WCHAR RealDriverName[256];
      wcscpy(RealDriverName ,pbIn->pdm.PrinterName);
@@ -101,6 +101,7 @@ void CreateGDIInfoFile(HANDLE hPrinter,VDEVMODE *pbIn ,WCHAR *GDIINFOFile)
      HDC hRealDC =  CreateDC(L"WINSPOOL",RealDriverName,NULL , pdmOutput1);
      free(pdmInput1);
      free(pdmOutput1);
+
      FillDeviceCaps(hRealDC,&(pbIn->pdm.gi),pbIn);
      ULONG palette[256];
      int numcolors = GetColorOrganisation(hRealDC , (DEVMODE *)pbIn, palette );
@@ -116,52 +117,27 @@ void CreateGDIInfoFile(HANDLE hPrinter,VDEVMODE *pbIn ,WCHAR *GDIINFOFile)
 
 
 
-void GetSplFileRight(HANDLE hPrinter)
+void CreateWin2kcompatibleSplFile(HANDLE hPrinter)
 {
 
-     LPBYTE pPrinterInfo;
+     LPBYTE pPInfo;
      DWORD cbNeeded;
-     GetPrinter(
-             hPrinter,    // handle to printer
-             2,        // information level
-             NULL ,    // printer information buffer
-             0,        // size of buffer
-             &cbNeeded   // bytes received or required
-             );
-     pPrinterInfo = (LPBYTE)malloc(cbNeeded);
-     GetPrinter(
-             hPrinter,    // handle to printer
-             2,        // information level
-             pPrinterInfo,    // printer information buffer
-             cbNeeded,        // size of buffer
-             &cbNeeded   // bytes received or required
-             );
-     if(!(((PRINTER_INFO_2 *)pPrinterInfo)->Attributes & PRINTER_ATTRIBUTE_KEEPPRINTEDJOBS))
+     GetPrinter( hPrinter, 2, NULL , 0, &cbNeeded);
+     pPInfo = (LPBYTE)malloc(cbNeeded);
+     GetPrinter( hPrinter, 2, pPInfo, cbNeeded, &cbNeeded );
+     if(!(((PRINTER_INFO_2 *)pPInfo)->Attributes & PRINTER_ATTRIBUTE_KEEPPRINTEDJOBS))
      {
-          ((PRINTER_INFO_2 *)pPrinterInfo)->Attributes |=PRINTER_ATTRIBUTE_KEEPPRINTEDJOBS;
-          ((PRINTER_INFO_2 *)pPrinterInfo)->Attributes &= ~PRINTER_ATTRIBUTE_DIRECT;
+          ((PRINTER_INFO_2 *)pPInfo)->Attributes |=PRINTER_ATTRIBUTE_KEEPPRINTEDJOBS;
+          ((PRINTER_INFO_2 *)pPInfo)->Attributes &= ~PRINTER_ATTRIBUTE_DIRECT;
           PRINTER_DEFAULTS defaults = { NULL, NULL, PRINTER_ACCESS_ADMINISTER};
           HANDLE hDriver;
-          //          ((PRINTER_INFO_2 *)pPrinterInfo)->pPortName = L"PP";
-          OpenPrinter(
-                      ((PRINTER_INFO_2 *)pPrinterInfo)->pPrinterName,         // printer or server name
-                      &hDriver,          // printer or server handle
-                      &defaults   // printer defaults
-                      );
-          if(!SetPrinter(
-                      hDriver,    // handle to printer
-                      2,        // information level
-                      pPrinterInfo ,    // printer information buffer
-                      0 
-                      ))
+          OpenPrinter( ((PRINTER_INFO_2 *)pPInfo)->pPrinterName, &hDriver, &defaults);
+          if(!SetPrinter( hDriver, 2, pPInfo , 0 ))
           {
-               WCHAR  str[256];
-               wsprintf(str , L"failure%d",GetLastError());
-               // OutputDebugString(str);
           }
           ClosePrinter(hDriver);
      }
-     free(pPrinterInfo);
+     free(pPInfo);
 }
 
 
@@ -171,7 +147,6 @@ unsigned long __stdcall ThreadFunc( LPVOID lpParam )
      DWORD dwJobId = *(DWORD *)((LPBYTE)lpParam + sizeof(HANDLE));
      Sleep(5000);
      SetJob(hPrinter , dwJobId,0,0,JOB_CONTROL_DELETE);
-     //OutputDebugString(L"In thread");
      ClosePrinter(hPrinter); 
      free(lpParam);
      return 0; 
@@ -179,7 +154,8 @@ unsigned long __stdcall ThreadFunc( LPVOID lpParam )
 
 BOOL PopFileSaveDlg(HWND hwnd , LPTSTR pstrFileName , LPTSTR pstrTitleName , OPENFILENAME &ofn)
 {
-     static TCHAR szFilter[] = TEXT ("EMF File (*.emf)\0*.emf\0");
+     static TCHAR szFilter[] = TEXT ("EMF File (*.emf)\0*.emf\0") \
+         TEXT ("24-Bit Bitmap (*.bmp)\0*.bmp\0\0") ;
 
      WCHAR szPath[1024];
      SHGetSpecialFolderPath(hwnd,szPath,CSIDL_PERSONAL,0);
@@ -233,7 +209,7 @@ BOOL APIENTRY LicenseDialog(
      return FALSE;
 }
 
-BOOL APIENTRY SaveDialog(
+BOOL APIENTRY PMDialog(
         HWND hDlg,
         UINT message,
         UINT wParam,
@@ -309,15 +285,25 @@ BOOL APIENTRY SaveDialog(
                   GetCurrentDirectory( MAX_PATH, DirName);
                   OutputDebugStringW(DirName);
                   PopFileSaveDlg (hDlg, szFileName, szTitleName,ofn);
-                  DEVMODE *pDevmode = NULL; 
-                  int PageNbr = GetWindowLongPtr(hDlg , GWLP_USERDATA);
-                  GetMetaFileFromSpoolFile(pPDev->pSpoolFileName ,PageNbr + 1,ofn.lpstrFile,
-                          pPDev, (BYTE **)&pDevmode);
-                  if(pDevmode)
-                       free(pDevmode);
+                  WCHAR *ptr =ofn.lpstrFile + ofn.nFileExtension; 
+                  if(!wcscmp(ptr,L"emf"))
+                  {
+                       DEVMODE *pDevmode = NULL; 
+                       int PageNbr = GetWindowLongPtr(hDlg , GWLP_USERDATA);
+                       GetMetaFileFromSpoolFile(pPDev->pSpoolFileName ,PageNbr + 1,ofn.lpstrFile,
+                               pPDev, (BYTE **)&pDevmode);
+                       if(pDevmode)
+                            free(pDevmode);
+                  }
+                  else 
+                       SaveAsBitmap(hDlg,ofn,pPDev);
              }
              break;
-
+         case IDPRINT:
+             {
+                  PrintToPaper(pPDev);
+             }
+             break;
          case IDNEXT:
              {
                   int PageNbr = GetWindowLongPtr(hDlg , GWLP_USERDATA);
@@ -380,6 +366,32 @@ BOOL APIENTRY SaveDialog(
      return TRUE;
 }
 
+void PMUIDriver::FixUpDevmode(IN HANDLE hPrinter , IN DEVMODE *pbIn, IN OUT PULONG pbOut)
+{
+     LPBYTE pPrinterInfo;
+     DWORD cbNeeded;
+     GetPrinter(hPrinter,2,NULL ,0,&cbNeeded);
+     pPrinterInfo = (LPBYTE)malloc(cbNeeded);
+     GetPrinter(hPrinter,2,pPrinterInfo,cbNeeded,&cbNeeded);
+     size_t sz;
+     VDEVMODE *pdm = 
+         (VDEVMODE *)malloc(sz = (sizeof(VDEVMODE)));
+     PDEVMODE pInDevmode = (PDEVMODE)pbIn;
+     if(pInDevmode->dmSize == sizeof(DEVMODEW) 
+             && pInDevmode->dmDriverExtra  == sizeof(VPDEVMODE))
+          memcpy((void *)pdm,(void *)pInDevmode , sz);
+     else
+     {
+          if(!IsSpooler())
+               DrvDocumentProperties(0,hPrinter , 
+                       ((PRINTER_INFO_2 *)pPrinterInfo)->pPrinterName
+                       ,(PDEVMODE)pdm,(PDEVMODE)pbIn,
+                       DM_IN_BUFFER | DM_OUT_BUFFER);
+     }
+     *pbOut = (ULONG)pdm;
+     CreateGDIInfo(hPrinter,pdm);
+     free(pPrinterInfo);
+}
 INT PMUIDriver::DrvDocumentEvent(
         HANDLE  hPrinter,
         HDC  hdc,
@@ -412,57 +424,12 @@ INT PMUIDriver::DrvDocumentEvent(
          }
      case DOCUMENTEVENT_CREATEDCPRE:
          {
-              GetSplFileRight(hPrinter);
-              DUMPMSG("DrvDocumentEventcreatedc");
+              CreateWin2kcompatibleSplFile(hPrinter);
 
-              LPBYTE pPrinterInfo;
-              DWORD cbNeeded;
-              GetPrinter(hPrinter,2,NULL ,0,&cbNeeded);
-              pPrinterInfo = (LPBYTE)malloc(cbNeeded);
-              GetPrinter(hPrinter,2,pPrinterInfo,cbNeeded,&cbNeeded);
               if(iEsc == DOCUMENTEVENT_CREATEDCPRE)
-              {
-
-                   size_t sz = sizeof(VDEVMODE);
-                   PDEVMODE pInDevmode = (PDEVMODE)pbIn[2];
-                   VDEVMODE *pdm = (VDEVMODE *)malloc(sz);
-                   if(pInDevmode->dmSize == sizeof(DEVMODEW) 
-                           && pInDevmode->dmDriverExtra  == sizeof(VPDEVMODE))
-                        memcpy((void *)pdm,(void *)pInDevmode , sz);
-                   else
-                   {
-                        if(!IsSpooler())
-                        {
-                             DrvDocumentProperties(0,hPrinter , 
-                                     ((PRINTER_INFO_2 *)pPrinterInfo)->pPrinterName
-                                     ,(PDEVMODE)pdm,(PDEVMODE)pbIn[2],
-                                     DM_IN_BUFFER | DM_OUT_BUFFER);
-                        }
-                   }
-                   *pbOut = (ULONG)pdm;
-                   CreateGDIInfoFile(hPrinter,pdm, NULL);
-              }
+                   FixUpDevmode(hPrinter , (PDEVMODE)pbIn[2], pbOut);
               else 
-              {
-                   size_t sz;
-                   VDEVMODE *pdm = 
-                       (VDEVMODE *)malloc(sz = (sizeof(VDEVMODE)));
-                   PDEVMODE pInDevmode = (PDEVMODE)pbIn[0];
-                   if(pInDevmode->dmSize == sizeof(DEVMODEW) 
-                           && pInDevmode->dmDriverExtra  == sizeof(VPDEVMODE))
-                        memcpy((void *)pdm,(void *)pInDevmode , sz);
-                   else
-                   {
-                        if(!IsSpooler())
-                             DrvDocumentProperties(0,hPrinter , 
-                                     ((PRINTER_INFO_2 *)pPrinterInfo)->pPrinterName
-                                     ,(PDEVMODE)pdm,(PDEVMODE)pbIn[0],
-                                     DM_IN_BUFFER | DM_OUT_BUFFER);
-                   }
-                   *pbOut = (ULONG)pdm;
-                   CreateGDIInfoFile(hPrinter,pdm, NULL);
-              }
-              free(pPrinterInfo);
+                   FixUpDevmode(hPrinter , (PDEVMODE)pbIn[0], pbOut);
 
          }
          break;
@@ -491,13 +458,10 @@ INT PMUIDriver::DrvDocumentEvent(
      case DOCUMENTEVENT_ENDDOC:
          {
               /* You need administrator access to the spool directory for the below to work */
-              WCHAR FileName[256];  
-              GetModuleFileName( NULL,FileName, 256);
-              if(wcsstr(FileName , L"spoolsv.exe"))
+              if(IsSpooler())
               {
                    DWORD dwSize = sizeof(DEVDATA) - sizeof(VDEVMODE *) - sizeof(LPTSTR);
 
-                   //               DEVDATA *pPDEV = (DEVDATA *)malloc(dwSize);
                    DEVDATA PDEV;
                    ZeroMemory(&PDEV , sizeof(DEVDATA));
                    ExtEscape(hdc,PDEV_ESCAPE, 0 , NULL , dwSize, (LPSTR)&PDEV); 
@@ -509,15 +473,17 @@ INT PMUIDriver::DrvDocumentEvent(
                    GetTempFile(NULL ,L"PM" , TempSpoolFileName);
                    CopyFile(SpoolFileName , TempSpoolFileName, FALSE);
                    PDEV.pSpoolFileName = TempSpoolFileName;
+                   DWORD cbNeeded;
+                   GetJob( PDEV.hPDriver, PDEV.dwJobId, 2, 0, 0, &cbNeeded);
+                   LPBYTE pJobInfo = (LPBYTE)MALLOC(cbNeeded);
+                   GetJob( PDEV.hPDriver, PDEV.dwJobId, 2, pJobInfo, cbNeeded, &cbNeeded);
+                   PDEV.pCurDevmode = (VDEVMODE *)(((JOB_INFO_2 *)pJobInfo)->pDevMode);
+                   PDEV.pDocument = (((JOB_INFO_2 *)pJobInfo)->pDocument);
 
-                   DialogBoxParam(
-                           (HINSTANCE)hModDLL,  // handle to module
-                           MAKEINTRESOURCE(IDD_SAVEDIALOG),
-                           GetDesktopWindow(),      // handle to owner window
-                           SaveDialog,  // dialog box procedure
-                           (LPARAM)(&PDEV) 
-                           );
+                   DialogBoxParam( (HINSTANCE)hModDLL, MAKEINTRESOURCE(IDD_SAVEDIALOG),
+                           GetDesktopWindow(), PMDialog, (LPARAM)(&PDEV));
                    dwJobId = PDEV.dwJobId;
+                   free(pJobInfo);
                    DeleteFile(TempSpoolFileName);
               }
               Pages  = 0;
@@ -544,13 +510,7 @@ INT PMUIDriver::DrvDocumentEvent(
                    LPVOID lpv = malloc(sizeof(HANDLE) + sizeof(DWORD));
                    *((HANDLE *)lpv) = hGPrinter;
                    *(DWORD *)((LPBYTE)lpv + sizeof(HANDLE)) = dwJobId;
-                   HANDLE hThread =                CreateThread( NULL,   
-                           0,                           // use default stack size  
-                           ThreadFunc,                  // thread function 
-                           lpv,                // argument to thread function 
-                           0,                           // use default creation flags 
-                           NULL);                // returns the thread identifier 
-
+                   HANDLE hThread =  CreateThread( NULL,   0, ThreadFunc, lpv, 0, NULL);     
               }
          }
          break;

@@ -56,10 +56,6 @@ DWORD  PMUIDriver::PMDrvDeviceCapabilities(HANDLE  hPrinter,PWSTR  pDeviceName, 
                GetRealDriverName(hPrinter , RealDriverName);
           free(pBuffer);
      }
-     /*
-        if(!IsSpooler())
-        ValidateSetRealDriver(RealDriverName);
-      */
      HANDLE hRPrinter = GetPrinterInfo(&pBuffer , RealDriverName);
 
      /* If there is an incoming devmode, 

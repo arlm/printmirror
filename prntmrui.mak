@@ -109,6 +109,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\docevent.obj" \
 	"$(INTDIR)\helper.obj" \
 	"$(INTDIR)\ntspl.obj" \
+	"$(INTDIR)\bitmap.obj" \
+	"$(INTDIR)\paper.obj" \
 	"$(INTDIR)\prntmrui.res"
 "$(OUTDIR)\prntmrui.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<

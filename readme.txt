@@ -47,5 +47,5 @@ How to use?
 
 How to reach the author?
 You can report bugs to author at vprnt@lycos.com.You can contribute to enhancement of PrintMirror
-as per GNU GPL. You can contribute by documenting the current sources.Feel free to reach the me for any suggestions.Also please give me a note when you found the tool useful and how it has helped you.
+as per GNU GPL. You can contribute by documenting the current sources.Feel free to reach me for any suggestions.Also please give me a note when you found the tool useful and how it has helped you.
   

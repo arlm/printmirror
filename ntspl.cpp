@@ -38,7 +38,6 @@ void GetMetaFileFromSpoolFile(TCHAR *SpoolFileName , int PageNbr , TCHAR *MetaFi
              0,             // low-order DWORD of size
              NULL                      // object name
              );
-     //filesize:we hope to be in 4GB range which by itself is huge.
      LPBYTE pMapFile = (LPBYTE)MapViewOfFileEx(
              hMapFile,   // handle to file-mapping object
              FILE_MAP_READ,       // access mode
