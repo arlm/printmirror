@@ -24,7 +24,7 @@ PLATFORM_SDK = "d:\prntmr\inc"
 NTDDK_INCLUDE = d:\ntddk\inc
 
 # Microsoft Developer Studio Generated NMAKE File, Based on prntmrui.dsp
-CFG=prntmrui - Win32 Debug
+#CFG=prntmrui - Win32 Debug
 !IF "$(CFG)" == ""
 CFG=prntmrui - Win32 Release
 !MESSAGE No configuration specified. Defaulting to prntmrui - Win32 Release.
@@ -101,9 +101,15 @@ LINK32_FLAGS= /LIBPATH:d:\ntddk\libfre vfw32.lib comctl32.lib kernel32.lib user3
 DEF_FILE= \
 	".\prntmrui.DEF"
 LINK32_OBJS= \
+	"$(INTDIR)\dllentry.obj" \
+	"$(INTDIR)\preview.obj" \
 	"$(INTDIR)\prntmrui.obj" \
+	"$(INTDIR)\convdevm.obj" \
+	"$(INTDIR)\devcap.obj" \
+	"$(INTDIR)\docevent.obj" \
+	"$(INTDIR)\helper.obj" \
+	"$(INTDIR)\ntspl.obj" \
 	"$(INTDIR)\prntmrui.res"
-
 "$(OUTDIR)\prntmrui.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
   $(LINK32_FLAGS) $(LINK32_OBJS)
@@ -164,6 +170,7 @@ DEF_FILE= \
 	".\prntmrui.DEF"
 LINK32_OBJS= \
 	"$(INTDIR)\dllentry.obj" \
+	"$(INTDIR)\preview.obj" \
 	"$(INTDIR)\prntmrui.obj" \
 	"$(INTDIR)\convdevm.obj" \
 	"$(INTDIR)\devcap.obj" \
@@ -183,6 +190,7 @@ LINK32_OBJS= \
 
 !IF "$(CFG)" == "prntmrui - Win32 Release" || "$(CFG)" == "prntmrui - Win32 Debug"
 SOURCE=\
+    preview.cpp \
     dllentry.cpp \
     prntmrui.cpp \
     convdevm.cpp \

@@ -29,10 +29,12 @@
 #define IDNEXT                        1001
 #define IDSAVE                        1002
 #define IDLICENSE                     1003
+#define IDPREVIEW                     1004
 #define IDD_PRINTDIALOG                 107
 #define IDD_DEVICEDIALOG                108
 #define IDD_SAVEDIALOG                  109
 #define IDD_LICENSEDIALOG               110
+#define IDD_PREVIEWER                   111  
 #define IDC_COMBOPRINTER                1024
 #define IDC_PRINTERCOMBO                1025
 #define IDC_PAPERCOMBO                  1026
@@ -40,6 +42,9 @@
 #define IDC_LICENSE                     1028
 #define IDC_CLOSE                       1003
 #define IDC_PAPERSIZE                   1036
+#define IDC_SCROLLX                     1037
+#define IDC_SCROLLY                     1038
+#define IDC_PREVIEW                     1039
 #define IDC_PRINTER                     -1
 
 

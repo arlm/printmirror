@@ -21,7 +21,7 @@
 
 
 #include "prntmrui.h"
-void StripMetaFileFromSpoolFile(TCHAR *SpoolFileName , int PageNbr , TCHAR *MetaFileName, PPDEV pPDev,LPBYTE *pDevmode)
+void GetMetaFileFromSpoolFile(TCHAR *SpoolFileName , int PageNbr , TCHAR *MetaFileName, PPDEV pPDev,LPBYTE *pDevmode)
 {
      HANDLE   hFile = CreateFile( SpoolFileName,
              GENERIC_READ,              // open for reading 
@@ -98,12 +98,10 @@ void StripMetaFileFromSpoolFile(TCHAR *SpoolFileName , int PageNbr , TCHAR *Meta
           LPBYTE ptr = pMapFile + metafilelen;
           if(pPDev->pResetDC[PageNbr - 1] == TRUE)
           {
-#if 1
                ptr += 4; // This marker is the same as the one after Devmode
                DWORD offset = *((DWORD *)ptr); //this is multiple of 4bytes.
                *pDevmode = (LPBYTE)MALLOC(offset); 
                memcpy(*pDevmode , ptr + 4 , offset);
-#endif     
           }
      }
      CloseHandle(hMetaFile);
@@ -153,14 +151,11 @@ void GetSpoolFileName(DWORD JobId, TCHAR SpoolFileName[],HANDLE hDriver)
           }
 
           wsprintf(SpoolFileName , L"%s%d.spl",TempSpoolFileName , JobId); 
-          //OutputDebugStringW(SpoolFileName);
-          //we got check  with the below, but its dummy now!!
           WIN32_FIND_DATA FindFileData;
           FindFirstFile(
                   SpoolFileName,               // file name
                   &FindFileData  // data buffer
                   );
-          //OutputDebugStringW(FindFileData.cFileName);
           wcscpy(SpoolFileName , (TCHAR *)pSpoolDirectory);
           wcscat(SpoolFileName , L"\\");
           wcscat(SpoolFileName , FindFileData.cFileName);

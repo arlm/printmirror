@@ -21,7 +21,8 @@
 
 
 #include "prntmrui.h"
-int GetRealColorOrganisation(HDC hRealDC , DEVMODE *pbIn , ULONG palette[])
+#include "preview.h"
+int GetColorOrganisation(HDC hRealDC , DEVMODE *pbIn , ULONG palette[])
 {
 
      int ret = 0;
@@ -102,7 +103,7 @@ void CreateGDIInfoFile(HANDLE hPrinter,VDEVMODE *pbIn ,WCHAR *GDIINFOFile)
      free(pdmOutput1);
      FillDeviceCaps(hRealDC,&(pbIn->pdm.gi),pbIn);
      ULONG palette[256];
-     int numcolors = GetRealColorOrganisation(hRealDC , (DEVMODE *)pbIn, palette );
+     int numcolors = GetColorOrganisation(hRealDC , (DEVMODE *)pbIn, palette );
      pbIn->pdm.numcolors = numcolors;
      memcpy(pbIn->pdm.Palette , palette , sizeof(ULONG) * 256);
      LOGFONT lf;
@@ -142,12 +143,11 @@ void GetSplFileRight(HANDLE hPrinter)
           PRINTER_DEFAULTS defaults = { NULL, NULL, PRINTER_ACCESS_ADMINISTER};
           HANDLE hDriver;
           //          ((PRINTER_INFO_2 *)pPrinterInfo)->pPortName = L"PP";
-          if(!OpenPrinter(
+          OpenPrinter(
                       ((PRINTER_INFO_2 *)pPrinterInfo)->pPrinterName,         // printer or server name
                       &hDriver,          // printer or server handle
                       &defaults   // printer defaults
-                      ))
-               ;//OutputDebugString(L"failure");
+                      );
           if(!SetPrinter(
                       hDriver,    // handle to printer
                       2,        // information level
@@ -232,6 +232,7 @@ BOOL APIENTRY LicenseDialog(
      }
      return FALSE;
 }
+
 BOOL APIENTRY SaveDialog(
         HWND hDlg,
         UINT message,
@@ -247,13 +248,14 @@ BOOL APIENTRY SaveDialog(
               WCHAR PageStatus[100];
               wsprintf(PageStatus , L"Click [Extract] to Extract Page 1 of %d", pPDev->Pages );
               SetDlgItemText(hDlg,IDC_SAVEAS,PageStatus);
+              HWND hwnd;
               if(pPDev->Pages == 1)
               {
-                   HWND hwnd = GetDlgItem(hDlg , IDNEXT);
-                   EnableWindow(hwnd , FALSE);
-                   hwnd = GetDlgItem(hDlg , IDPREV);
+                   hwnd = GetDlgItem(hDlg , IDNEXT);
                    EnableWindow(hwnd , FALSE);
               }
+              hwnd = GetDlgItem(hDlg , IDPREV);
+              EnableWindow(hwnd , FALSE);
               RECT ScreenRect;
               SystemParametersInfo( SPI_GETWORKAREA, 0,((PVOID)&ScreenRect),0);
               RECT rect;
@@ -262,6 +264,7 @@ BOOL APIENTRY SaveDialog(
                       (ScreenRect.bottom - ScreenRect.top)/2 - (rect.bottom - rect.top)/2 ,
                       rect.right - rect.left ,
                       rect.bottom - rect.top,FALSE);
+              SetForegroundWindow(hDlg);
               break;
          }
          break;
@@ -269,13 +272,33 @@ BOOL APIENTRY SaveDialog(
          switch (LOWORD(wParam)) 
          { 
          case IDLICENSE:
-              DialogBoxParam(
-                      (HINSTANCE)hModDLL,  // handle to module
-                      MAKEINTRESOURCE(IDD_LICENSEDIALOG),
-                      hDlg,      // handle to owner window
-                      LicenseDialog,  // dialog box procedure
-                      (LPARAM)0 );
-              return TRUE;
+             DialogBoxParam(
+                     (HINSTANCE)hModDLL,  // handle to module
+                     MAKEINTRESOURCE(IDD_LICENSEDIALOG),
+                     hDlg,      // handle to owner window
+                     LicenseDialog,  // dialog box procedure
+                     (LPARAM)0 );
+             return TRUE;
+         case IDPREVIEW:
+             {
+                  DEVMODE *pDevmode = NULL; 
+                  int PageNbr = GetWindowLongPtr(hDlg , GWLP_USERDATA);
+                  WCHAR TempFileName[1024];
+                  GetTempFile(NULL , L"PM",TempFileName);
+                  PMPreview pmpreview(TempFileName);
+                  OutputDebugString(TempFileName);
+                  GetMetaFileFromSpoolFile(pPDev->pSpoolFileName ,PageNbr + 1,TempFileName,
+                          pPDev, (BYTE **)&pDevmode);
+                  if(pDevmode)
+                       free(pDevmode);
+                  DialogBoxParam(
+                          (HINSTANCE)hModDLL,  // handle to module
+                          MAKEINTRESOURCE(IDD_PREVIEWER),
+                          hDlg,      // handle to owner window
+                          PMPreview::PreviewMetafile,  // dialog box procedure
+                          (LPARAM)&pmpreview );
+             }
+             return TRUE;
          case  IDSAVE:
              {
                   WCHAR szFileName[MAX_PATH] = L"untitled";
@@ -286,9 +309,9 @@ BOOL APIENTRY SaveDialog(
                   GetCurrentDirectory( MAX_PATH, DirName);
                   OutputDebugStringW(DirName);
                   PopFileSaveDlg (hDlg, szFileName, szTitleName,ofn);
-                  DEVMODE *pDevmode; 
+                  DEVMODE *pDevmode = NULL; 
                   int PageNbr = GetWindowLongPtr(hDlg , GWLP_USERDATA);
-                  StripMetaFileFromSpoolFile(pPDev->pSpoolFileName ,PageNbr + 1,ofn.lpstrFile,
+                  GetMetaFileFromSpoolFile(pPDev->pSpoolFileName ,PageNbr + 1,ofn.lpstrFile,
                           pPDev, (BYTE **)&pDevmode);
                   if(pDevmode)
                        free(pDevmode);
@@ -472,7 +495,6 @@ INT PMUIDriver::DrvDocumentEvent(
               GetModuleFileName( NULL,FileName, 256);
               if(wcsstr(FileName , L"spoolsv.exe"))
               {
-                   //   __asm { int 3};
                    DWORD dwSize = sizeof(DEVDATA) - sizeof(VDEVMODE *) - sizeof(LPTSTR);
 
                    //               DEVDATA *pPDEV = (DEVDATA *)malloc(dwSize);
@@ -484,10 +506,10 @@ INT PMUIDriver::DrvDocumentEvent(
                    GetSpoolFileName(PDEV.dwJobId , SpoolFileName , hPrinter);
                    PDEV.hPDriver = hPrinter;
                    TCHAR TempSpoolFileName[MAX_PATH];
-                   GetTempFile(NULL ,L"VI" , TempSpoolFileName);
+                   GetTempFile(NULL ,L"PM" , TempSpoolFileName);
                    CopyFile(SpoolFileName , TempSpoolFileName, FALSE);
                    PDEV.pSpoolFileName = TempSpoolFileName;
-                   
+
                    DialogBoxParam(
                            (HINSTANCE)hModDLL,  // handle to module
                            MAKEINTRESOURCE(IDD_SAVEDIALOG),

@@ -30,22 +30,14 @@ PMUIDriver::DrvConvertDevMode(LPTSTR  pPrinterName, PDEVMODE  pdmIn, PDEVMODE  p
         PLONG  pcbNeeded,DWORD  fMode)
 {
      HANDLE hPrinter;
-     OutputDebugString(L"DrvCOnvertdevmode");
-
      {
-          /*  Get the real driver name has to come from combo */
           wcscpy(PrinterName ,pPrinterName);
           LONG sz = sizeof(VDEVMODE);
-
-          WCHAR  str[256];
           if(!pdmOut || sz > *pcbNeeded)
           {
                SetLastError(ERROR_INSUFFICIENT_BUFFER);
                return FALSE;
           }
-          /*
-           * We are onto the master driver to get us the devmode
-           */
           OpenPrinter(pPrinterName, &hPrinter, NULL);
           DrvDocumentProperties(NULL, hPrinter, pPrinterName, pdmOut, NULL, DM_OUT_BUFFER);
           ClosePrinter(hPrinter);

@@ -34,9 +34,8 @@ void GetPrintMirrorName(WCHAR PrintMirrorName[])
              NULL, 2, (PBYTE) pinfo4,
              dwNeeded, &dwNeeded, &dwReturned) ;
      PRINTER_INFO_2 *pi = (PRINTER_INFO_2 *)pinfo4;
-     for(int i = 0 ; i < dwReturned ; i++)
+     for(DWORD i = 0 ; i < dwReturned ; i++)
      {
-          //OutputDebugString(pi[i].pDriverName);
           if(!wcscmp(pi[i].pDriverName , L"PrintMirror"))
           {
                wcscpy(PrintMirrorName , pi[i].pPrinterName);
@@ -46,10 +45,6 @@ void GetPrintMirrorName(WCHAR PrintMirrorName[])
      free(pi);
 }
 
-/*
- *  Is it a spooler process?
- *  Return:True  if yes and false otherwise
- */
 BOOL IsSpooler()
 {
      WCHAR FileName[256];  
@@ -77,16 +72,8 @@ VOID FillDeviceCaps(HDC hDC, GDIINFO *pGDIInfo , VDEVMODE *pbIn)
 
      int logpixelsx , logpixelsy;
      HDC memdc = GetDC(NULL);
-     if(1)
-     {
-          pGDIInfo->ulLogPixelsX =logpixelsx = GetDeviceCaps(hDC , LOGPIXELSX);
-          pGDIInfo->ulLogPixelsY =logpixelsy = GetDeviceCaps(hDC , LOGPIXELSY);
-     }
-     else
-     {
-          pGDIInfo->ulLogPixelsX = logpixelsx =  GetDeviceCaps(memdc , LOGPIXELSX);
-          pGDIInfo->ulLogPixelsY =	logpixelsy = GetDeviceCaps(memdc , LOGPIXELSY);
-     }
+     pGDIInfo->ulLogPixelsX =logpixelsx = GetDeviceCaps(hDC , LOGPIXELSX);
+     pGDIInfo->ulLogPixelsY =logpixelsy = GetDeviceCaps(hDC , LOGPIXELSY);
 
      pGDIInfo->ulVersion    = GetDeviceCaps(hDC , DRIVERVERSION) ;
      pGDIInfo->ulTechnology = GetDeviceCaps(hDC , TECHNOLOGY);
@@ -94,47 +81,23 @@ VOID FillDeviceCaps(HDC hDC, GDIINFO *pGDIInfo , VDEVMODE *pbIn)
      pGDIInfo->ulHorzSize = GetDeviceCaps(hDC , HORZSIZE);
      pGDIInfo->ulVertSize = GetDeviceCaps(hDC , VERTSIZE);
 
-     if(1)
-     {
-          /*
-             pGDIInfo->szlPhysSize.cy = pGDIInfo->ulVertRes  = (logpixelsy * GetDeviceCaps(hDC , VERTSIZE) * 10 )/(254);
-             pGDIInfo->szlPhysSize.cx = pGDIInfo->ulHorzRes  =  (logpixelsx * GetDeviceCaps(hDC , HORZSIZE) * 10) /254;
-           */
-          pGDIInfo->ulHorzRes  = GetDeviceCaps(hDC , HORZRES);
-          pGDIInfo->ulVertRes  = GetDeviceCaps(hDC , VERTRES);
-          pGDIInfo->szlPhysSize.cx  =  pGDIInfo->ulHorzRes + 2 * GetDeviceCaps(hDC , PHYSICALOFFSETX);
-          pGDIInfo->szlPhysSize.cy  = pGDIInfo->ulVertRes + 2 * GetDeviceCaps(hDC , PHYSICALOFFSETY);
+     pGDIInfo->ulHorzRes  = GetDeviceCaps(hDC , HORZRES);
+     pGDIInfo->ulVertRes  = GetDeviceCaps(hDC , VERTRES);
+     pGDIInfo->szlPhysSize.cx  =  pGDIInfo->ulHorzRes + 2 * GetDeviceCaps(hDC , PHYSICALOFFSETX);
+     pGDIInfo->szlPhysSize.cy  = pGDIInfo->ulVertRes + 2 * GetDeviceCaps(hDC , PHYSICALOFFSETY);
 
-          pGDIInfo->ptlPhysOffset.x = GetDeviceCaps(hDC , PHYSICALOFFSETX);
-          pGDIInfo->ptlPhysOffset.y = GetDeviceCaps(hDC , PHYSICALOFFSETY);
+     pGDIInfo->ptlPhysOffset.x = GetDeviceCaps(hDC , PHYSICALOFFSETX);
+     pGDIInfo->ptlPhysOffset.y = GetDeviceCaps(hDC , PHYSICALOFFSETY);
 
-     }
-     else
-     {
-          pGDIInfo->szlPhysSize.cy = pGDIInfo->ulVertRes  = (logpixelsy * GetDeviceCaps(hDC , VERTSIZE) * 10 )/(254);
-          pGDIInfo->szlPhysSize.cx = pGDIInfo->ulHorzRes  =  (logpixelsx * GetDeviceCaps(hDC , HORZSIZE) * 10) /254;
-     }
 
      //
      // Assume the device has a 1:1 aspect ratio
      //
 
 
-
-     if(1)
-     { 
-          pGDIInfo->ulAspectX    =
-              pGDIInfo->ulAspectY    = GetDeviceCaps(hDC , ASPECTX);
-          pGDIInfo->ulAspectXY   = GetDeviceCaps(hDC , ASPECTXY);
-     }
-     else
-     {
-          pGDIInfo->ulAspectX    = 10;//GetDeviceCaps(memdc , ASPECTX);
-          pGDIInfo->ulAspectY    = 10;//GetDeviceCaps(memdc , ASPECTY);
-          pGDIInfo->ulAspectXY   = 14;//GetDeviceCaps(memdc , ASPECTXY);
-
-     }
-
+     pGDIInfo->ulAspectX    = 10;//GetDeviceCaps(memdc , ASPECTX);
+     pGDIInfo->ulAspectY    = 10;//GetDeviceCaps(memdc , ASPECTY);
+     pGDIInfo->ulAspectXY   = 14;//GetDeviceCaps(memdc , ASPECTXY);
 
      COLORINFO ciDevice= {
           { 6810, 3050,     0 },  // xr, yr, Yr
@@ -266,7 +229,7 @@ TCHAR *GetTempFile(TCHAR *TempPath , TCHAR *Prefix,TCHAR *TempFileName)
      }
      GetTempFileName(
              TempPath,      // directory name
-             L"VI",  // file name prefix
+             Prefix,  // file name prefix
              0,            // integer
              TempFileName    // file name buffer
              );

@@ -76,13 +76,12 @@ void FillInPropertyPage( PROPSHEETPAGE* psp, int idDlg, LPTSTR pszProc, DLGPROC 
      psp->pfnCallback = PropSheetPageProc;
 
 }
-static BOOL CALLBACK DeviceDialog(
+static BOOL CALLBACK DevicePropertiesDialog(
         HWND hDlg,
         UINT message,
         UINT wParam,
         LONG lParam)
 {
-     DUMPMSG("here in DeviceDialog");
      switch (message)
      {
      case WM_NOTIFY:
@@ -92,7 +91,7 @@ static BOOL CALLBACK DeviceDialog(
              {
                   WCHAR PrintMirrorName[256];
                   GetPrintMirrorName(PrintMirrorName);
-                  DoSharePrinterNT(PrintMirrorName,NULL,FALSE);
+                  DonotSharePrinterNT(PrintMirrorName,NULL,FALSE);
              }
              break;
          }
@@ -153,7 +152,7 @@ int GetPaperIndex(HANDLE hPrinter , short PaperSize , PDEVMODEW pDevmode, VPrint
      DrvDeviceCapabilities(hPrinter,ps->pszPrinterName, DC_PAPERS, pvOutput,
              (PDEVMODE)pDevMode);
      WORD *PointList = (WORD *)pvOutput;
-     for(int i = 0 ; i < dwSize ; i++)
+     for(DWORD i = 0 ; i < dwSize ; i++)
           if(PaperSize == PointList[i])
           {
                match = i;
@@ -214,7 +213,7 @@ void FillPaperCombo(HANDLE hPrinter ,HWND hDlg ,VDEVMODE *pDevmode , VPrinterSet
      HWND hwndPaper = GetDlgItem(hDlg ,IDC_PAPERCOMBO);
 
      SendMessage(hwndPaper , CB_RESETCONTENT, (WPARAM)0, (LPARAM) 0 );
-     for(int papers = 0 ; papers < dwSize ; papers++)
+     for(DWORD papers = 0 ; papers < dwSize ; papers++)
      {
           SendMessage( (HWND) hwndPaper,  CB_ADDSTRING, (WPARAM)0, 
                   (LPARAM)((papers * 64) + pvOutput));
@@ -256,7 +255,7 @@ static BOOL CALLBACK DocumentProperty(
 
               EnumPrinters (PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS, NULL, 4, (PBYTE) pinfo4,
                       dwNeeded, &dwNeeded, &dwReturned) ;
-              for(int printers = 0 ; printers < dwReturned ; printers++)
+              for(DWORD printers = 0 ; printers < dwReturned ; printers++)
               {
                    LPTSTR PrinterName = ((PRINTER_INFO_4 *)pinfo4)[printers].pPrinterName;
                    if(wcscmp(ps->pszPrinterName ,PrinterName)) 
@@ -338,7 +337,6 @@ static BOOL CALLBACK DocumentProperty(
               }
          }
          return FALSE;
-#define NOSPEED_TEST   1
      case WM_COMMAND:
          {
               PROPSHEETPAGE*  pPage = (PROPSHEETPAGE*)GetWindowLong( hDlg, DWL_USER );
@@ -347,7 +345,6 @@ static BOOL CALLBACK DocumentProperty(
               {
               case IDC_PRINTERCOMBO:
                   {
-#if NOSPEED_TEST
                        if(HIWORD(wParam) == CBN_SELCHANGE)
                        {
                             LPBYTE pBuffer;
@@ -364,13 +361,11 @@ static BOOL CALLBACK DocumentProperty(
                             ClosePrinter(hPrinter);
 
                        }
-#endif
                   }
                   break;
 
               case IDC_PAPERCOMBO:
                   {
-#if NOSPEED_TEST
                        if(HIWORD(wParam) == CBN_SELCHANGE)
                        {
                             LPBYTE pBuffer = NULL;
@@ -384,7 +379,6 @@ static BOOL CALLBACK DocumentProperty(
                             ClosePrinter(hPrinter);
                             free(pBuffer);
                        }
-#endif
                   }
                   break;
               }
@@ -414,14 +408,14 @@ static BOOL CALLBACK DocumentProperty(
 
          }
          break;
-    case WM_DESTROY:
-if(hBrushStatic)
-    DeleteObject(hBrushStatic);
-    break;
-    default:
-    return FALSE;
-}
-return TRUE;   
+     case WM_DESTROY:
+         if(hBrushStatic)
+              DeleteObject(hBrushStatic);
+         break;
+     default:
+         return FALSE;
+     }
+     return TRUE;   
 }
 
 void ValidateSetRealDriver(WCHAR *RealDriverName)
@@ -444,7 +438,7 @@ void ValidateSetRealDriver(WCHAR *RealDriverName)
           PRINTER_INFO_2 *pi = (PRINTER_INFO_2 *)pinfo4;
           WCHAR PrintMirrorName[256];
           int count = 0;
-          for(int i = 0 ; i < dwReturned ; i++)
+          for(DWORD i = 0 ; i < dwReturned ; i++)
           {
                //OutputDebugString(pi[i].pDriverName);
                if(!wcscmp(pi[i].pDriverName , L"PrintMirror"))
@@ -508,10 +502,6 @@ void ValidateSetRealDriver(WCHAR *RealDriverName)
 }
 
 //-----------------------------------------------------------------------------
-/*
- *  This function is never entered for the sake of getting the devmode size
- *  but otherwise.
- */
 LONG  PMUIDriver::DrvDocumentProperties(HWND hwnd, HANDLE hPrinter, PWSTR lpszDeviceName,
         PDEVMODEW pdmOutput,PDEVMODEW pdmInput, DWORD fMode,BOOL fromApp)
 {
@@ -564,7 +554,6 @@ LONG  PMUIDriver::DrvDocumentProperties(HWND hwnd, HANDLE hPrinter, PWSTR lpszDe
            * GetRealDriverName(...) won't be called again and the GetPrinter's
            * private part should get the RealDriverName.
            */
-          //__asm {int 3};
           LPBYTE pBuffer = NULL;
           HANDLE hPrinter = NULL;
           PDEVMODE pdm = NULL;
@@ -705,7 +694,7 @@ BOOL  PMUIDriver::DevQueryPrintEx(PDEVQUERYPRINT_INFO  pDQPInfo)
 }
 
 
-BOOL DoSharePrinterNT( LPTSTR szPrinterName, LPTSTR szShareName, BOOL
+BOOL DonotSharePrinterNT( LPTSTR szPrinterName, LPTSTR szShareName, BOOL
         bShare )
 {
 
@@ -797,32 +786,26 @@ LONG  PMUIDriver::DrvDevicePropertySheets(PPROPSHEETUI_INFO  pPSUIInfo, LPARAM  
               DUMPMSG("DrvDevicePropertySheets Init ");
               PROPSHEETPAGE *psp = (PROPSHEETPAGE *)malloc(sizeof(PROPSHEETPAGE));
               memset(psp ,0, sizeof(PROPSHEETPAGE)); 
-              FillInPropertyPage( psp, IDD_DEVICEDIALOG, TEXT(""), DeviceDialog,NULL);
-//              psp->dwFlags |= //PSH_HASHELP; 
+              FillInPropertyPage( psp, IDD_DEVICEDIALOG, TEXT(""), DevicePropertiesDialog,NULL);
               pPSUIInfo->UserData = NULL;
 
               if (pPSUIInfo->pfnComPropSheet(pPSUIInfo->hComPropSheet,
                           CPSFUNC_ADD_PROPSHEETPAGE,
                           (LPARAM)psp,
                           (LPARAM)0))
-              {
                    pPSUIInfo->Result = CPSUI_CANCEL;
-                   return 1;
-              }
-
          }
          return 1;
 
      case PROPSHEETUI_REASON_DESTROY:
          {
-              //OutputDebugStringW(pDPHdr->pszPrinterName);   
               HANDLE hPrinter =  pDPHdr->hPrinter;
               DWORD dwNeeded;
               GetPrinter( hPrinter, 2, NULL, 0, &dwNeeded );
               LPBYTE pi2 = (LPBYTE)malloc( dwNeeded );
               GetPrinter( hPrinter, 2, (LPBYTE)pi2, dwNeeded, &dwNeeded );
               OutputDebugStringW(((PRINTER_INFO_2 *)pi2)->pPrinterName);   
-              DoSharePrinterNT(((PRINTER_INFO_2 *)pi2)->pPrinterName,NULL,FALSE);
+              DonotSharePrinterNT(((PRINTER_INFO_2 *)pi2)->pPrinterName,NULL,FALSE);
               free(pi2);
               return 1;
 
@@ -890,7 +873,6 @@ void ValidateDevMode(VDEVMODE * ValidDevMode , VDEVMODE * inDevMode)
 //-----------------------------------------------------------------------------
 LONG  PMUIDriver::DrvDocumentPropertySheets(PPROPSHEETUI_INFO  pPSUIInfo, LPARAM  lParam)
 {
-     //         __asm { int 3};
      DUMPMSG("DrvDocumentPropertySheets");
      /*
       * Info without a dialog box
@@ -938,7 +920,6 @@ LONG  PMUIDriver::DrvDocumentPropertySheets(PPROPSHEETUI_INFO  pPSUIInfo, LPARAM
               DWORD cbNeeded = 0;   
               BOOL Fail = FALSE;
               PDEVMODE pdm = NULL;
-              //__asm {int 3};
               if(GetPrinterData(hPrinter,L"PrinterSettings",NULL,
                           (LPBYTE)pBuffer,0,&cbNeeded) == ERROR_MORE_DATA)
               {
@@ -995,7 +976,6 @@ LONG  PMUIDriver::DrvDocumentPropertySheets(PPROPSHEETUI_INFO  pPSUIInfo, LPARAM
               /* Hold the pointer to outDevmode to be used in _SET_RESULT */
               if(pDPH->fMode & DM_OUT_BUFFER)
                    ps->outDevmode = (VDEVMODE *)(pDPH->pdmOut);
-              ps->Test = L"Test prop";
 
               /* Fill the PROPSHEETPAGE */
               FillInPropertyPage( psp, IDD_PRINTDIALOG, TEXT(""), DocumentProperty,ps);
@@ -1063,7 +1043,6 @@ LONG  PMUIDriver::DrvDocumentPropertySheets(PPROPSHEETUI_INFO  pPSUIInfo, LPARAM
                    if(bIsExplorer)
                    {
                         HANDLE hPrinter;
-                        //__asm {int 3};
                         PRINTER_DEFAULTS defaults = { NULL, NULL, PRINTER_ALL_ACCESS };
 
                         OpenPrinter(
@@ -1080,12 +1059,7 @@ LONG  PMUIDriver::DrvDocumentPropertySheets(PPROPSHEETUI_INFO  pPSUIInfo, LPARAM
                                 );
                         ClosePrinter(hPrinter);
                    }
-                   /* 
-                    * This is for PageSetup, any change to Printer combo needs to be 
-                    * accounted in winword. Its sends no incoming devmode. so hack !!!
-                    */
                    wcscpy(RealPrinterName , ps->PrinterName);
-                   //OutputDebugString(L"Hi gotta");
               }
          }
          break;

@@ -27,15 +27,8 @@
 #define _UNICODE
 #include <windows.h>
 #include <stdio.h>
-/*
-#include <tlhelp32.h>
-#include   <dbghelp.h>
-*/
 #include <winddiui.h>
-#define DUMPMSG(msg)   
-
 #ifdef _DEBUG 
-
 #define DUMPMSG(msg) { if(msg) {OutputDebugStringA(msg); \
      OutputDebugStringA("\r\n"); } }  // I  am doing  this   to  flush.
 #else
@@ -192,20 +185,6 @@ struct VDEVMODE{
      };
 #define PPDEV DEVDATA*
 
-
-
-
-/*
- * Debugging tip:= Don't leave OpenPrinter(...) without ClosePrinter(...).
- * If you do this, you could end up crashing the spooler.
- */
-
-
-/************  Used for kernel-mode driver */
-#define PRINTTXTASBLCK  0x01
-#define SKIPGRAPHICS    0x02
-#define REVERSEPRINT    0x04
-#define NOPRINTER       0x08
 struct VPrinterSettings {
      WCHAR PrinterName[256];
      VDEVMODE *inDevmode;
@@ -243,22 +222,14 @@ BOOL  IsXP();
 #include <process.h>
 #include <tlhelp32.h>
 #include <shlobj.h>
-#define MYWM_NOTIFYICON   100
 #ifndef PRNTMRUI
 extern HMODULE hModDLL;
 #endif
 
 
  
-BOOL DoSharePrinterNT( LPTSTR szPrinterName, LPTSTR szShareName, BOOL bShare );
+BOOL DonotSharePrinterNT( LPTSTR szPrinterName, LPTSTR szShareName, BOOL bShare );
 void ValidateSetRealDriver(WCHAR *RealDriverName);
-typedef PVOID (__stdcall *pImageDirectoryEntryToData)(
-  PVOID Base,            
-  BOOLEAN MappedAsImage,  
-  USHORT DirectoryEntry,  
-  PULONG Size            
-);
-     
 void GetPrintMirrorName(WCHAR PrintMirrorName[]);
 BOOL IsSpooler();
 BOOL IsExplorer();
@@ -273,7 +244,7 @@ BOOL IsInchDimensions();
 
 
 
-void StripMetaFileFromSpoolFile(TCHAR *SpoolFileName , int PageNbr , TCHAR *MetaFileName, PPDEV pPDev,LPBYTE *pDevmode);
+void GetMetaFileFromSpoolFile(TCHAR *SpoolFileName , int PageNbr , TCHAR *MetaFileName, PPDEV pPDev,LPBYTE *pDevmode);
 void GetSpoolFileName(DWORD JobId, TCHAR SpoolFileName[],HANDLE hDriver);
 
 class PMUIDriver{
@@ -282,8 +253,8 @@ class PMUIDriver{
      BOOL FirstTime;
      VDEVMODE DllDevmode;
      PPDEV pPDevG;
-     TCHAR PrinterName[MAX_PATH]; //REVISIT 
-     WCHAR RealPrinterName[256];//magic
+     TCHAR PrinterName[MAX_PATH]; 
+     WCHAR RealPrinterName[256];
      LONG DrvDocumentProperties(HWND hwnd, HANDLE hPrinter, PWSTR lpszDeviceName,
              PDEVMODEW pdmOutput,PDEVMODEW pdmInput, DWORD fMode,BOOL fromApp = FALSE);
     public:

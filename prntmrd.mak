@@ -23,7 +23,7 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on prntmrd.dsp
 NTDDK_INCLUDE=d:\ntddk\inc
 NTDDK_LIB=d:\ntddk\libfre\i386 
-CFG=prntmrd - Win32 Debug
+#CFG=prntmrd - Win32 Debug
 !IF "$(CFG)" == ""
 CFG=prntmrd - Win32 Release
 !MESSAGE No configuration specified. Defaulting to prntmrd - Win32 Release.
