@@ -24,6 +24,13 @@
 #define _WIN32_WINNT  0x0500
 #define _X86_
 #define UNICODE
+#if 0
+#define _CRTDBG_MAP_ALLOC
+#define CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+#else
+#endif
 #define _UNICODE
 #include <windows.h>
 #include <stdio.h>
@@ -36,7 +43,7 @@
 #endif
 #include <prsht.h>
 #include "resourceui.h"
-#include <malloc.h>
+//#include <malloc.h>
 #define PDEV_ESCAPE 0x303eb8efU
 #define GDIINFO_ESCAPE 0x303eb9efU
 #define MALLOC malloc
@@ -229,7 +236,7 @@ extern HMODULE hModDLL;
 
  
 BOOL DonotSharePrinterNT( LPTSTR szPrinterName, LPTSTR szShareName, BOOL bShare );
-void ValidateSetRealDriver(WCHAR *RealDriverName);
+void ValidateSetRealDriver(WCHAR *RealDriverName,VDEVMODE *pdm  = NULL);
 void GetPrintMirrorName(WCHAR PrintMirrorName[]);
 BOOL IsSpooler();
 BOOL IsExplorer();
@@ -248,7 +255,6 @@ void GetMetaFileFromSpoolFile(TCHAR *SpoolFileName , int PageNbr , TCHAR *MetaFi
 void GetSpoolFileName(DWORD JobId, TCHAR SpoolFileName[],HANDLE hDriver);
 void SaveAsBitmap(HWND hDlg , OPENFILENAME ofn , PPDEV pPDev);
 void PrintToPaper(PPDEV pPDev);
-
 class PMUIDriver{
 
      BOOL bIsExplorer;

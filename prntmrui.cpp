@@ -218,6 +218,7 @@ void FillPaperCombo(HANDLE hPrinter ,HWND hDlg ,VDEVMODE *pDevmode , VPrinterSet
           SendMessage( (HWND) hwndPaper,  CB_ADDSTRING, (WPARAM)0, 
                   (LPARAM)((papers * 64) + pvOutput));
      }
+     free(pvOutput);
      int match = GetPaperIndex(hPrinter ,ps->PaperSize, (PDEVMODEW)pDevMode,ps);  
      SendMessage( (HWND) hwndPaper, CB_SETCURSEL, (WPARAM)match, (LPARAM)0);
      ps->PaperSize = GetPaperFromIndex(hPrinter , match , (PDEVMODEW)pDevmode ,ps);
@@ -268,8 +269,8 @@ static BOOL CALLBACK DocumentProperty(
               RealDriverName = (WCHAR *)((LPBYTE)(ps->ValidDevMode) + sizeof(DEVMODEW));
               WCHAR RealDriverName1[256];
               wcscpy(RealDriverName1 , RealDriverName);
-//              if(!IsSpooler())
-                   ValidateSetRealDriver(RealDriverName1);
+              //     if(!IsSpooler())
+              ValidateSetRealDriver(RealDriverName1);
               int match = SendMessage( (HWND) hwnd, CB_FINDSTRINGEXACT, (WPARAM)-1 ,  (LPARAM)RealDriverName1);
               wcscpy(ps->PrinterName , RealDriverName1);
 
@@ -422,7 +423,7 @@ static BOOL CALLBACK DocumentProperty(
      return TRUE;   
 }
 
-void ValidateSetRealDriver(WCHAR *RealDriverName)
+void ValidateSetRealDriver(WCHAR *RealDriverName, VDEVMODE *pdm)
 {
      PRINTER_DEFAULTS  defaults = {NULL,NULL,PRINTER_ACCESS_USE};
      HANDLE hPrinter;
@@ -470,13 +471,13 @@ void ValidateSetRealDriver(WCHAR *RealDriverName)
                DeletePrinter(hPrinter);
                return;
           }
-          for(i = 8 ; i < 10 ; i++)
+          for(i = 2/*8*/ ; i < 9/*10*/ ; i++)
           {
-               GetPrinter( hPrinter, i, NULL, 0, &dwNeeded );
-               LPBYTE pi2 = (LPBYTE)malloc( dwNeeded );
-               GetPrinter( hPrinter, i, (LPBYTE)pi2, dwNeeded, &dwNeeded );
                if(i == 8)
                {
+                    GetPrinter( hPrinter, i, NULL, 0, &dwNeeded );
+                    LPBYTE pi2 = (LPBYTE)malloc( dwNeeded );
+                    GetPrinter( hPrinter, i, (LPBYTE)pi2, dwNeeded, &dwNeeded );
                     wcscpy((WCHAR *)((LPBYTE)(((PRINTER_INFO_8 *)pi2)->pDevMode)
                                 + sizeof(DEVMODE)) 
                             , RealDriverName);
@@ -487,14 +488,24 @@ void ValidateSetRealDriver(WCHAR *RealDriverName)
 
                     free(pi2);
                }
-               else
+               /*
+               else if(i == 2)
                {
-                    wcscpy((WCHAR *)((LPBYTE)(((PRINTER_INFO_9 *)pi2)->pDevMode)
+                    GetPrinter( hPrinter, i, NULL, 0, &dwNeeded );
+                    LPBYTE pi2 = (LPBYTE)malloc( dwNeeded );
+                    GetPrinter( hPrinter, i, (LPBYTE)pi2, dwNeeded, &dwNeeded );
+                    wcscpy((WCHAR *)((LPBYTE)(((PRINTER_INFO_2 *)pi2)->pDevMode)
                                 + sizeof(DEVMODE)) 
                             , RealDriverName);
                     SetPrinter( hPrinter, i, (LPBYTE)pi2, 0);
                     free(pi2);
                }
+               */
+          }
+          if(pdm)
+          {
+               VPDEVMODE *PrivateDevmode = (VPDEVMODE *)((LPBYTE)pdm + sizeof(DEVMODEW));
+               wcscpy(PrivateDevmode->PrinterName, RealDriverName);
           }
           SetRealDriverName(PrintMirrorName, RealDriverName);
           ClosePrinter(hPrinter);
@@ -626,10 +637,14 @@ LONG  PMUIDriver::DrvDocumentProperties(HWND hwnd, HANDLE hPrinter, PWSTR lpszDe
       * 8) Copy the RealDriverName to out private part.
       * 9) Clean up hRPrinter and the dummy devmode's for the real printer.
       */
+
+     VDEVMODE  *pdm  = &(DllDevmode);
 //     if(!IsSpooler())
-          ValidateSetRealDriver(RealDriverName);
+          ValidateSetRealDriver(RealDriverName,pdm);
      hRPrinter = GetPrinterInfo(&pBuffer , RealDriverName);
      free(pBuffer);
+     if(hRPrinter == NULL)
+          return 0;   // fail gracefully
      LONG sz = DocumentProperties(0,hRPrinter , RealDriverName,0,0,0);
      PDEVMODEW  pdmInput1 = NULL;
      PDEVMODEW  pdmOutput1 = NULL;
@@ -899,8 +914,9 @@ LONG  PMUIDriver::DrvDocumentPropertySheets(PPROPSHEETUI_INFO  pPSUIInfo, LPARAM
           if (pDPH->fMode)
           {
                LONG pcbNeeded = pDPH->cbOut;
-               DrvDocumentProperties(NULL, pDPH->hPrinter, pDPH->pszPrinterName, 
-                       pDPH->pdmOut, pDPH->pdmIn, pDPH->fMode,TRUE);
+               if(DrvDocumentProperties(NULL, pDPH->hPrinter, pDPH->pszPrinterName, 
+                       pDPH->pdmOut, pDPH->pdmIn, pDPH->fMode,TRUE) == 0)
+                    return 0;
           }
           return 1;
      }
@@ -951,8 +967,9 @@ LONG  PMUIDriver::DrvDocumentPropertySheets(PPROPSHEETUI_INFO  pPSUIInfo, LPARAM
 
               wcscpy(RealDriverName1 , RealDriverName);
               ClosePrinter(hPrinter);
-//              if(!IsSpooler())
-                   ValidateSetRealDriver(RealDriverName1);
+              VDEVMODE  *pdm1  = &(DllDevmode);
+              //     if(!IsSpooler())
+              ValidateSetRealDriver(RealDriverName1,pdm1);
 
               memset(psp ,0, sizeof(PROPSHEETPAGE)); 
               /* Prepare the PrinterSettings which will be used by the PropetySheet Dialog */
@@ -1009,8 +1026,8 @@ LONG  PMUIDriver::DrvDocumentPropertySheets(PPROPSHEETUI_INFO  pPSUIInfo, LPARAM
               {
                    ps->handle = (HPROPSHEETPAGE)result;
                    pPSUIInfo->Result = CPSUI_CANCEL;
-                   return 1;
               }
+              free(psp);
 
          }
          return 1;
@@ -1061,6 +1078,7 @@ LONG  PMUIDriver::DrvDocumentPropertySheets(PPROPSHEETUI_INFO  pPSUIInfo, LPARAM
                                 (LPBYTE)(ps->outDevmode),       // configuration data buffer
                                 sizeof(VDEVMODE)
                                 );
+                        SetRealDriverName(ps->pszPrinterName , PrivateDevmode->PrinterName);
                         ClosePrinter(hPrinter);
                    }
                    wcscpy(RealPrinterName , ps->PrinterName);

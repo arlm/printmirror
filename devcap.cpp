@@ -56,7 +56,14 @@ DWORD  PMUIDriver::PMDrvDeviceCapabilities(HANDLE  hPrinter,PWSTR  pDeviceName, 
                GetRealDriverName(hPrinter , RealDriverName);
           free(pBuffer);
      }
-     HANDLE hRPrinter = GetPrinterInfo(&pBuffer , RealDriverName);
+     LPBYTE pBuffer3;
+     HANDLE hRPrinter = GetPrinterInfo(&pBuffer3 , RealDriverName);
+     if(hRPrinter == NULL)
+     {
+          GetRealDriverName(hPrinter , RealDriverName);
+          hRPrinter = GetPrinterInfo(&pBuffer , RealDriverName);
+     }
+     else pBuffer = pBuffer3;
 
      /* If there is an incoming devmode, 
         1) Get the real driver's devmode size
@@ -86,6 +93,7 @@ DWORD  PMUIDriver::PMDrvDeviceCapabilities(HANDLE  hPrinter,PWSTR  pDeviceName, 
      /* The real driver should fix up the devmode and then do the rest */
      DWORD ret =  DeviceCapabilities( RealDriverName, ((PRINTER_INFO_2 *)pBuffer)->pPortName,
              iDevCap, (LPTSTR)pvOutput, pdmInput);
+     free(pdmInput);
      free(pBuffer);
      return ret;
 

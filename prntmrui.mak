@@ -143,7 +143,7 @@ CLEAN :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
 CPP=cl.exe
-CPP_PROJ=/nologo /Gz /MTd /W3 /Gm /GX /ZI /Od /I $(NTDDK_INCLUDE)  /I $(PLATFORM_SDK) /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /Fp"$(INTDIR)\prntmrui.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /Gz /MDd /W3 /Gm /GX /ZI /Od /I $(NTDDK_INCLUDE)  /I $(PLATFORM_SDK) /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /Fp"$(INTDIR)\prntmrui.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
